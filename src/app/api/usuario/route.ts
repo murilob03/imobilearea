@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/db'
 import { UserCriar, UserLer, UserRole } from '@/types'
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 
 // Handle GET requests
 export async function GET(req: Request) {

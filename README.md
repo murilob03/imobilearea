@@ -9,8 +9,8 @@ Este projeto foi desenvolvido como parte da disciplina de **Construção de Soft
 ### **1. Clonar o Repositório**
 
 ```bash
-git clone https://github.com/murilob03/imobarea-cs.git
-cd imobarea-cs
+git clone https://github.com/murilob03/imobilearea.git
+cd imobilearea
 ```
 
 ### **2. Instalar Dependências**
