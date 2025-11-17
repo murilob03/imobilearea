@@ -8,22 +8,22 @@ import Image from 'next/image'
 interface EditImovelProps {
   imovel: ImovelLer
   onExcluir?: () => void
-  isExpanded?: boolean
-  onToggle?: () => void
-  onEditar?: () => void
+  selecionado?: boolean
+  onSelecionar?: () => void
 }
 
-const EditImovel = ({ 
-  imovel, 
-  onExcluir, 
-  isExpanded = false, 
-  onToggle, 
-  onEditar 
+const EditImovel = ({
+  imovel,
+  onExcluir,
+  selecionado = false,
+  onSelecionar,
 }: EditImovelProps) => {
+  const [isExpanded, setIsExpanded] = useState(false)
+
   const handleToggle = () => {
-    if (onToggle) {
-      onToggle()
-    }
+    setIsExpanded(!isExpanded)
+
+    if (onSelecionar) onSelecionar()
   }
 
   const handleExcluir = async () => {
@@ -38,15 +38,16 @@ const EditImovel = ({
 
       if (onExcluir) onExcluir()
     } catch (error) {
-      console.log('oi')
+      console.log('Erro ao excluir imóvel:', error)
     }
-    console.log('Excluir imóvel')
   }
 
   return (
     <div
       className={`relative flex flex-col items-center justify-center rounded-2xl transition-all duration-300 ${
-        isExpanded ? 'bg-marrom_claro text-black p-6' : 'bg-bege text-black p-4'
+        selecionado
+          ? 'bg-marrom_claro text-black p-6'
+          : 'bg-bege text-black p-4'
       }`}
     >
       {/* Botão principal */}
@@ -83,7 +84,7 @@ const EditImovel = ({
       </button>
 
       {/* Botões adicionais, aparecem somente quando expandido */}
-      {isExpanded && (
+      {selecionado && (
         <div className="flex w-full flex-shrink-0 gap-3">
           <button
             className="flex w-full py-3 justify-center bg-white rounded-full shadow-md"

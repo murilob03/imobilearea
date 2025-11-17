@@ -14,8 +14,11 @@ export default function ListarImoveis() {
   const router = useRouter()
   const [imoveis, setImoveis] = useState([] as ImovelLer[])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [error, setError] = useState<string | null>(null)
   const [expandedImovelId, setExpandedImovelId] = useState<string | null>(null)
+  const [imovelSelecionado, setImovelSelecionado] = useState<string | null>(
+    null
+  )
 
   const fetchImoveis = async () => {
     try {
@@ -28,8 +31,8 @@ export default function ListarImoveis() {
       }
       const data = await response.json()
       setImoveis(data)
-    } catch (error: any) {
-      setError(error.message)
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Erro desconhecido')
     } finally {
       setLoading(false)
     }
@@ -70,13 +73,16 @@ export default function ListarImoveis() {
       ) : imoveis.length > 0 ? (
         <div className="pb-20">
           {imoveis.map((imovel) => (
-            <EditImovel 
-              key={imovel.id} 
-              imovel={imovel} 
+            <EditImovel
+              key={imovel.id}
+              imovel={imovel}
               onExcluir={fetchImoveis}
-              isExpanded={expandedImovelId === imovel.id}
-              onToggle={() => handleToggleImovel(imovel.id)}
-              onEditar={() => handleEditarImovel(imovel.id)}
+              selecionado={imovelSelecionado === imovel.id}
+              onSelecionar={() =>
+                setImovelSelecionado((prev) =>
+                  prev === imovel.id ? null : imovel.id
+                )
+              }
             />
           ))}
         </div>
