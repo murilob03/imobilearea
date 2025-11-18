@@ -89,7 +89,8 @@ const ShowImovel: React.FC<ShowImovelProps> = ({ imovel }) => {
         >
           <Heart
             size={16}
-            className={favorito ? 'text-red-500' : 'text-gray-600'} // Altera a cor do coração com base no estado
+            className={favorito ? 'text-red-500' : 'text-gray-600'}
+            fill={favorito ? 'currentColor' : 'none'} // Preenche o coração quando favoritado
           />
         </div>
       </div>
