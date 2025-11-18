@@ -3,9 +3,10 @@
 import AgenteCard from '@/components/AgenteCard'
 import CustomButton from '@/components/CustomButton'
 import InputField from '@/components/InputField'
+import ConfirmModal from '@/components/ConfirmModal'
 import { UserRole } from '@/types'
 import { AgenteLer } from '@/types/usuarios'
-import { Search } from 'lucide-react'
+import { Search, ArrowLeft } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -17,6 +18,7 @@ export default function AssociarAgente() {
   const [agente, setAgente] = useState<AgenteLer | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [hasSearched, setHasSearched] = useState(false)
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
 
   if (!session) {
     return <p>Loading...</p>
@@ -66,7 +68,14 @@ export default function AssociarAgente() {
     }
   }
 
-  const handleAddAgente = async () => {
+  const handleAddAgente = () => {
+    if (!agente) {
+      return
+    }
+    setShowConfirmModal(true)
+  }
+
+  const confirmAssociation = async () => {
     if (!agente) {
       return
     }
@@ -86,12 +95,19 @@ export default function AssociarAgente() {
 
       setAgente(null)
       setHasSearched(false)
+      setShowConfirmModal(false)
 
-      // success message
+      // Mensagem de sucesso
+      setErrorMessage(null)
       console.log(data)
     } catch (error: any) {
       setErrorMessage(error.message || 'Erro desconhecido.')
+      setShowConfirmModal(false)
     }
+  }
+
+  const cancelAssociation = () => {
+    setShowConfirmModal(false)
   }
 
   const SearchResults = ({
@@ -153,7 +169,12 @@ export default function AssociarAgente() {
     <div className="flex h-screen flex-col items-center bg-bege">
       <div className="p-[64px_24px] flex flex-col w-full h-screen justify-between">
         <div>
-          <h1 className="text-2xl font-bold mb-[48px]">
+          <h1 className="flex items-center text-2xl font-bold mb-[48px] gap-4">
+            <ArrowLeft
+              size={48}
+              className="cursor-pointer"
+              onClick={() => router.back()}
+            />
             ASSOCIAR AGENTES IMOBILIÁRIOS...
           </h1>
           <p className="text-base mb-[32px]">
@@ -190,6 +211,20 @@ export default function AssociarAgente() {
           />
         </div>
       </div>
+
+      {/* Modal de confirmação */}
+      <ConfirmModal
+        isOpen={showConfirmModal}
+        title="Confirmar Associação"
+        message={
+          agente
+            ? `Tem certeza que deseja associar o agente ${agente.name} (CRECI: ${agente.creci}) à sua imobiliária?`
+            : ''
+        }
+        confirmText="Associar"
+        onConfirm={confirmAssociation}
+        onCancel={cancelAssociation}
+      />
     </div>
   )
 }
