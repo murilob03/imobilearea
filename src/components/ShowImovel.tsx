@@ -89,7 +89,7 @@ const ShowImovel: React.FC<ShowImovelProps> = ({ imovel }) => {
         >
           <Heart
             size={16}
-            className={favorito ? 'text-red-500' : 'text-gray-600'}
+            className={favorito ? 'text-marrom' : 'text-gray-600'}
             fill={favorito ? 'currentColor' : 'none'} // Preenche o coração quando favoritado
           />
         </div>
