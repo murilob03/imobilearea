@@ -14,6 +14,7 @@ export default function ListarAgentesCadastrados() {
   const [agentes, setAgentes] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [expandedAgenteId, setExpandedAgenteId] = useState<string | null>(null)
 
   const fetchAgentes = async () => {
     try {
@@ -33,6 +34,11 @@ export default function ListarAgentesCadastrados() {
   useEffect(() => {
     fetchAgentes()
   }, [])
+
+  const handleToggleAgente = (agenteId: string) => {
+    // Se o agente já está expandido, colapsa. Senão, expande apenas este
+    setExpandedAgenteId(expandedAgenteId === agenteId ? null : agenteId)
+  }
 
   if (!session) {
     return <p>Loading session...</p>
@@ -65,8 +71,14 @@ export default function ListarAgentesCadastrados() {
       {/* Lista de Agentes */}
       <div className="flex flex-col gap-6 w-full">
         {agentes.length > 0 ? (
-          agentes.map((agente, index) => (
-            <EditAgente key={index} agente={agente} onDelete={fetchAgentes}/>
+          agentes.map((agente: any, index) => (
+            <EditAgente 
+              key={agente.id} 
+              agente={agente} 
+              onDelete={fetchAgentes}
+              isExpanded={expandedAgenteId === agente.id}
+              onToggle={() => handleToggleAgente(agente.id)}
+            />
           ))
         ) : (
           <p>No agentes found.</p>

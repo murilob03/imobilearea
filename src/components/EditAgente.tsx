@@ -6,14 +6,22 @@ import ConfirmModal from './ConfirmModal'
 interface EditAgenteProps {
   agente: AgenteLer
   onDelete?: () => void
+  isExpanded?: boolean
+  onToggle?: () => void
 }
 
-const EditAgente = ({ agente, onDelete }: EditAgenteProps) => {
-  const [isExpanded, setIsExpanded] = useState(false)
+const EditAgente = ({ 
+  agente, 
+  onDelete, 
+  isExpanded = false, 
+  onToggle 
+}: EditAgenteProps) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   const handleToggle = () => {
-    setIsExpanded(!isExpanded)
+    if (onToggle) {
+      onToggle()
+    }
   }
 
   const handleDeleteClick = () => {
@@ -75,7 +83,10 @@ const EditAgente = ({ agente, onDelete }: EditAgenteProps) => {
         <div className="flex w-full flex-shrink-0 gap-3">
           <button
             className="flex w-full py-3 justify-center bg-white rounded-full shadow-md"
-            onClick={handleDeleteClick}
+            onClick={(e) => {
+              e.stopPropagation()
+              handleDeleteClick()
+            }}
           >
             Excluir
           </button>

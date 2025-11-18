@@ -8,13 +8,22 @@ import Image from 'next/image'
 interface EditImovelProps {
   imovel: ImovelLer
   onExcluir?: () => void
+  isExpanded?: boolean
+  onToggle?: () => void
+  onEditar?: () => void
 }
 
-const EditImovel = ({ imovel, onExcluir }: EditImovelProps) => {
-  const [isExpanded, setIsExpanded] = useState(false)
-
+const EditImovel = ({ 
+  imovel, 
+  onExcluir, 
+  isExpanded = false, 
+  onToggle, 
+  onEditar 
+}: EditImovelProps) => {
   const handleToggle = () => {
-    setIsExpanded(!isExpanded)
+    if (onToggle) {
+      onToggle()
+    }
   }
 
   const handleExcluir = async () => {
@@ -78,11 +87,20 @@ const EditImovel = ({ imovel, onExcluir }: EditImovelProps) => {
         <div className="flex w-full flex-shrink-0 gap-3">
           <button
             className="flex w-full py-3 justify-center bg-white rounded-full shadow-md"
-            onClick={handleExcluir}
+            onClick={(e) => {
+              e.stopPropagation()
+              handleExcluir()
+            }}
           >
             Excluir
           </button>
-          <button className="flex w-full py-3 justify-center bg-marrom rounded-full text-white shadow-md">
+          <button 
+            className="flex w-full py-3 justify-center bg-marrom rounded-full text-white shadow-md"
+            onClick={(e) => {
+              e.stopPropagation()
+              if (onEditar) onEditar()
+            }}
+          >
             Editar
           </button>
         </div>
