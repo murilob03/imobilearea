@@ -14,6 +14,7 @@ export default {
         bege: '#F6F3EC',
         marrom: '#9D6F4D',
         marrom_claro: '#E9D9C9',
+        azul_escuro: '#0F172A',
       },
       spacing: {
         'px-16': '16px',
