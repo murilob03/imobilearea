@@ -37,6 +37,7 @@ export default function ListarImoveis() {
       setImoveis(data)
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Erro desconhecido')
+      setError(error instanceof Error ? error.message : 'Erro desconhecido')
     } finally {
       setLoading(false)
     }
