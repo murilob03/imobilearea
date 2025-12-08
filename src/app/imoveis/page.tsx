@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import Footer from '@/components/Footer'
 import EditImovel from '@/components/EditImovel'
 import CustomButton from '@/components/CustomButton'
@@ -10,9 +11,11 @@ import { ImovelLer } from '@/types/imovel'
 
 export default function ListarImoveis() {
   const { data: session } = useSession()
+  const router = useRouter()
   const [imoveis, setImoveis] = useState([] as ImovelLer[])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [expandedImovelId, setExpandedImovelId] = useState<string | null>(null)
 
   const fetchImoveis = async () => {
     try {
@@ -25,7 +28,7 @@ export default function ListarImoveis() {
       }
       const data = await response.json()
       setImoveis(data)
-    } catch (error) {
+    } catch (error: any) {
       setError(error.message)
     } finally {
       setLoading(false)
@@ -35,6 +38,16 @@ export default function ListarImoveis() {
   useEffect(() => {
     if (session?.user) fetchImoveis()
   }, [session?.user])
+
+  const handleToggleImovel = (imovelId: string) => {
+    // Se o imóvel já está expandido, colapsa. Senão, expande apenas este
+    setExpandedImovelId(expandedImovelId === imovelId ? null : imovelId)
+  }
+
+  const handleEditarImovel = (imovelId: string) => {
+    // Navegar para página de edição/detalhes
+    router.push(`/imoveis/${imovelId}`)
+  }
 
   return (
     <div className="flex p-[64px_24px] flex-col items-center gap-8 w-full justify-between">
@@ -57,7 +70,14 @@ export default function ListarImoveis() {
       ) : imoveis.length > 0 ? (
         <div className="pb-20">
           {imoveis.map((imovel) => (
-            <EditImovel key={imovel.id} imovel={imovel} onExcluir={fetchImoveis} />
+            <EditImovel 
+              key={imovel.id} 
+              imovel={imovel} 
+              onExcluir={fetchImoveis}
+              isExpanded={expandedImovelId === imovel.id}
+              onToggle={() => handleToggleImovel(imovel.id)}
+              onEditar={() => handleEditarImovel(imovel.id)}
+            />
           ))}
         </div>
       ) : (

@@ -69,10 +69,10 @@ const ShowImovel: React.FC<ShowImovelProps> = ({ imovel }) => {
 
   return (
     <div
-      className="w-[342px] h-[275px] rounded-3xl overflow-hidden relative bg-white shadow-lg cursor-pointer"
+      className="w-[342px] h-[275px] rounded-3xl overflow-hidden relative bg-white shadow-lg cursor-pointer isolate"
       onClick={() => router.push(`/imoveis/${imovel.id}`)}
     >
-      <div className="relative w-full h-[235px]">
+      <div className="relative w-full h-[235px] overflow-hidden">
         <Image
           src="/noah.jpg"
           width={342}
@@ -81,7 +81,7 @@ const ShowImovel: React.FC<ShowImovelProps> = ({ imovel }) => {
           className="w-full h-full object-cover"
         />
         <div
-          className="absolute top-2 right-2 bg-white rounded-full p-1 shadow cursor-pointer z-10"
+          className="absolute top-2 right-2 bg-white rounded-full p-1 shadow cursor-pointer z-20"
           onClick={(e) => {
             e.stopPropagation()
             toggleFavorito()
@@ -89,7 +89,8 @@ const ShowImovel: React.FC<ShowImovelProps> = ({ imovel }) => {
         >
           <Heart
             size={16}
-            className={favorito ? 'text-red-500' : 'text-gray-600'} // Altera a cor do coração com base no estado
+            className={favorito ? 'text-red-600' : 'text-gray-600'}
+            fill={favorito ? 'currentColor' : 'none'} // Preenche o coração quando favoritado
           />
         </div>
       </div>
