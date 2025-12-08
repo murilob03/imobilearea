@@ -5,69 +5,128 @@ import ChatAvatar from '@/components/ChatAvatar'
 import ChatMessage from '@/components/ChatMessage'
 import { ArrowLeft, Phone, Video, Send, Plus } from 'lucide-react'
 import { useRouter, useParams } from 'next/navigation'
-import { useState } from 'react'
-import { Message } from '@/types/chat'
+import { useEffect, useState, useRef } from 'react'
+import {
+  ChatMessage as ChatMsgType,
+  MessageFromServer,
+  MessageSendDTO,
+} from '@/types/chat'
 
 export default function ChatPage() {
   const router = useRouter()
   const params = useParams()
+  const conversationId = Number(params.id)
+
   const [msg, setMsg] = useState('')
+  const [messages, setMessages] = useState<ChatMsgType[]>([])
+  const [otherUser, setOtherUser] = useState<any>(null)
+  const [meId, setMeId] = useState<string | null>(null)
 
-  // TODO: Backend - Buscar mensagens reais do chat
-  // GET /api/chat/[id]/messages - Buscar histórico de mensagens
-  // Parâmetro: userId (do params)
-  // Retorno: array de { id, senderId, text, timestamp }
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 1,
-      text: 'Olá! Vi o imóvel anunciado na Rua das Flores. Ainda está disponível?',
-      time: '8:30',
-      isMine: false
-    },
-    {
-      id: 2,
-      text: 'Sim! O imóvel ainda está disponível. Gostaria de agendar uma visita?',
-      time: '8:32',
-      isMine: true
-    },
-    {
-      id: 3,
-      text: 'Perfeito! Quando seria possível visitar?',
-      time: '8:35',
-      isMine: false
-    },
-    {
-      id: 4,
-      text: 'Posso marcar para amanhã às 14h. Funciona para você?',
-      time: '8:37',
-      isMine: true
-    }
-  ])
+  const bottomRef = useRef<HTMLDivElement>(null)
 
-  // TODO: Backend - Buscar dados do destinatário
-  // GET /api/user/[id] - Buscar informações do outro usuário
-  // Retorno: { id, name, avatar/photoUrl }
-  const user = {
-    name: 'Jean Lucas',
-    avatar: '👨🏽' // TODO: Substituir por URL da foto do usuário
+  // Scroll automático
+  const scrollToBottom = () => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  // TODO: Backend - Enviar mensagem para o servidor
-  // POST /api/chat/[id]/messages
-  // Body: { receiverId, text, timestamp }
-  const handleSend = () => {
-    if (msg.trim()) {
-      setMessages([
-        ...messages,
-        {
-          id: messages.length + 1,
-          text: msg,
-          time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-          isMine: true
-        }
-      ])
-      setMsg('')
+  // Função para converter MessageFromServer → ChatMessage
+  const transformMessage = (
+    m: MessageFromServer,
+    myId: string
+  ): ChatMsgType => ({
+    id: m.id,
+    text: m.text,
+    createdAt: m.createdAt,
+    isMine: m.senderId === myId,
+  })
+
+  // 🧩 Carregar mensagens + dados da conversa
+  useEffect(() => {
+    async function loadMessages() {
+      // pegar histórico
+      const res = await fetch(
+        `/api/chat/messages?conversationId=${conversationId}`
+      )
+      const data: MessageFromServer[] = await res.json()
+
+      // pegar meu id
+      const sessionRes = await fetch('/api/auth/session')
+      const session = await sessionRes.json()
+      const myId = session.user.id
+      setMeId(myId)
+
+      // buscar dados da conversa
+      const convRes = await fetch(`/api/chat/conversations/${conversationId}`)
+
+      const convData = await convRes.json()
+
+      // determinar "outro usuário"
+      const theOther =
+        convData.clientId === myId ? convData.agent : convData.client
+
+      setOtherUser(theOther)
+
+      // converter mensagens
+      const formatted = data.map((m) => transformMessage(m, myId))
+
+      setMessages(formatted)
+      scrollToBottom()
     }
+
+    loadMessages()
+  }, [conversationId])
+
+  // 🔁 Polling para novas mensagens
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if (messages.length === 0 || !meId) return
+
+      const lastTimestamp = messages[messages.length - 1].createdAt
+
+      const res = await fetch(
+        `/api/chat/messages?conversationId=${conversationId}&since=${lastTimestamp}`
+      )
+
+      const news: MessageFromServer[] = await res.json()
+
+      if (news.length > 0) {
+        const formatted = news.map((m) => transformMessage(m, meId))
+        setMessages((prev) => [...prev, ...formatted])
+        scrollToBottom()
+      }
+    }, 2000)
+
+    return () => clearInterval(interval)
+  }, [messages, meId, conversationId])
+
+  // 📨 Enviar mensagem real
+  async function handleSend() {
+    if (!msg.trim()) return
+    if (!meId) return
+
+    const payload: MessageSendDTO = {
+      conversationId,
+      text: msg,
+    }
+
+    const res = await fetch('/api/chat/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+
+    const newMsg: MessageFromServer = await res.json()
+
+    // converter mensagem
+    const formatted = transformMessage(newMsg, meId)
+
+    setMessages((prev) => [...prev, formatted])
+    setMsg('')
+    scrollToBottom()
+  }
+
+  if (!otherUser) {
+    return <div className="text-center p-20">Carregando conversa...</div>
   }
 
   return (
@@ -81,9 +140,9 @@ export default function ChatPage() {
             onClick={() => router.back()}
           />
 
-          <ChatAvatar avatar={user.avatar} size="small" />
+          <ChatAvatar avatar={otherUser.avatar ?? '👤'} size="small" />
 
-          <span className="font-semibold text-black">{user.name}</span>
+          <span className="font-semibold text-black">{otherUser.name}</span>
         </div>
 
         <div className="flex items-center gap-4">
@@ -94,14 +153,6 @@ export default function ChatPage() {
 
       {/* Mensagens */}
       <div className="flex-1 overflow-auto px-4 py-6">
-        {/* Data */}
-        <div className="flex justify-center mb-6">
-          <span className="text-sm text-gray-700">
-            Hoje
-          </span>
-        </div>
-
-        {/* Lista de mensagens */}
         <div className="space-y-3">
           {messages.map((message) => (
             <ChatMessage
@@ -110,6 +161,7 @@ export default function ChatPage() {
               isMine={message.isMine}
             />
           ))}
+          <div ref={bottomRef} />
         </div>
       </div>
 
@@ -126,13 +178,16 @@ export default function ChatPage() {
             placeholder=""
             value={msg}
             onChange={(e) => setMsg(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault() // impede quebra de linha
+                handleSend()
+              }
+            }}
             className="flex-1 !bg-white !border-none !rounded-full px-5 py-3"
           />
 
-          <button 
-            onClick={handleSend}
-            className="text-white"
-          >
+          <button onClick={handleSend} className="text-white">
             <Send size={24} />
           </button>
         </div>

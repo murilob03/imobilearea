@@ -40,6 +40,34 @@ export default function ImovelPage() {
     return <p>Loading imovel...</p>
   }
 
+  async function iniciarConversa() {
+    const res = await fetch('/api/chat/conversations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        agentId: imovel.agenteId, // id do agente
+        propertyId: imovel.id, // id do imóvel
+      }),
+    })
+
+    if (!res.ok) {
+      console.error('Erro ao iniciar conversa')
+      return
+    }
+
+    const conversa = await res.json()
+
+    // conversa.id (se já existia)
+    // ou novaConversa.id (se acabou de criar)
+
+    const id = conversa.id ?? conversa.novaConversa?.id
+
+    // redireciona para o chat
+    router.push(`/chat/${id}`)
+  }
+
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
       <div className="w-full h-full bg-bege overflow-y-auto relative">
@@ -104,7 +132,7 @@ export default function ImovelPage() {
               <Briefcase size={16} className="mr-2" />
               <span>Imobiliária:</span>
               <Link
-                href={`/perfil/${imovel.imobiliaria.id}`}
+                href={`/perfil/${imovel.imobiliariaId}`}
                 className="text-blue-500"
               >
                 {imovel.imobiliaria.user.name}
@@ -115,25 +143,28 @@ export default function ImovelPage() {
             </label>
             {/* Verificação se o agente imobiliário existe */}
             {imovel.agente ? (
-              <Link href={`/perfil/${imovel.agente.id}`}>
-                <div className="bg-marrom w-[342px] h-[84px] rounded-2xl flex items-center mt-2">
-                  <div className="flex flex-row gap-3 items-center justify-between w-full">
-                    <Image
-                      src="/koreano.png"
-                      alt="Foto do agente"
-                      style={{
-                        border: '5px solid #9D6F4D',
-                        borderRadius: '50%',
-                      }}
-                      width={60}
-                      height={60}
-                      className="ml-2"
-                    />
-                    <h1 className="text-base">{imovel.agente.user.name}</h1>
-                    <MessageCircle size={30} className="mx-2" />
-                  </div>
+              <button
+                onClick={iniciarConversa}
+                className="bg-marrom w-[342px] h-[84px] rounded-2xl flex items-center mt-2"
+              >
+                <div className="flex flex-row gap-3 items-center justify-between w-full">
+                  <Image
+                    src="/koreano.png"
+                    alt="Foto do agente"
+                    style={{
+                      border: '5px solid #9D6F4D',
+                      borderRadius: '50%',
+                    }}
+                    width={60}
+                    height={60}
+                    className="ml-2"
+                  />
+
+                  <h1 className="text-base">{imovel.agente.user.name}</h1>
+
+                  <MessageCircle size={30} className="mx-2" />
                 </div>
-              </Link>
+              </button>
             ) : (
               <p className="text-gray-600">Não há agente imobiliário.</p>
             )}

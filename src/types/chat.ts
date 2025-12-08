@@ -7,16 +7,27 @@ export interface ConversaCriar {
   propertyId?: string
 }
 
-export interface Message {
+// Mensagem exatamente como o backend retorna (Prisma)
+export interface MessageFromServer {
+  id: number
+  conversationId: number
+  senderId: string
+  text: string
+  createdAt: string // ISO string vinda da API
+}
+
+// Mensagem usada no front-end (com isMine)
+export interface ChatMessage {
   id: number
   text: string
-  time: string
+  createdAt: string
   isMine: boolean
-  // TODO: Adicionar quando integrar com banco:
-  // senderId: string
-  // receiverId: string
-  // timestamp: Date
-  // status?: 'sent' | 'delivered' | 'read'
+}
+
+// Objeto usado para enviar mensagem ao backend
+export interface MessageSendDTO {
+  conversationId: number
+  text: string
 }
 
 export interface User {
