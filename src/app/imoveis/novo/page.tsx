@@ -94,6 +94,18 @@ export default function RegistrationForm() {
       form.elements.namedItem('tipoOferta') as HTMLSelectElement
     ).value
 
+    const VALOR_MAXIMO_IMOVEL = 100_000_000
+
+    if (isNaN(valor) || valor <= 0) {
+      alert('O valor do imóvel deve ser maior que zero.')
+      return
+    }
+
+    if (valor > VALOR_MAXIMO_IMOVEL) {
+      alert('O valor máximo permitido é R$ 100.000.000')
+      return
+    }
+
     const agente = (form.elements.namedItem('agentes') as HTMLSelectElement)
       .value
     const agenteId = agenteOptions[agente] || null
@@ -142,7 +154,7 @@ export default function RegistrationForm() {
   }
 
   return (
-    <div className="flex flex-col items-center bg-[#F6F3EC] w-[390px] h-[1147px] mx-auto px-6 py-4">
+    <div className="flex flex-col items-center bg-[#F6F3EC] w-[390px] h-fit mx-auto px-6 py-4">
       <div className="text-left mt-8 mb-6 w-full">
         <h1 className="flex items-center text-2xl font-bold mb-[48px] gap-4">
           <ArrowLeft

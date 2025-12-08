@@ -8,22 +8,22 @@ import Image from 'next/image'
 interface EditImovelProps {
   imovel: ImovelLer
   onExcluir?: () => void
-  isExpanded?: boolean
-  onToggle?: () => void
-  onEditar?: () => void
+  selecionado?: boolean
+  onSelecionar?: () => void
 }
 
-const EditImovel = ({ 
-  imovel, 
-  onExcluir, 
-  isExpanded = false, 
-  onToggle, 
-  onEditar 
+const EditImovel = ({
+  imovel,
+  onExcluir,
+  selecionado = false,
+  onSelecionar,
 }: EditImovelProps) => {
+  const [isExpanded, setIsExpanded] = useState(false)
+
   const handleToggle = () => {
-    if (onToggle) {
-      onToggle()
-    }
+    setIsExpanded(!isExpanded)
+
+    if (onSelecionar) onSelecionar()
   }
 
   const handleExcluir = async () => {
@@ -38,15 +38,14 @@ const EditImovel = ({
 
       if (onExcluir) onExcluir()
     } catch (error) {
-      console.log('oi')
+      console.log('Erro ao excluir imóvel:', error)
     }
-    console.log('Excluir imóvel')
   }
 
   return (
     <div
-      className={`relative flex flex-col items-center justify-center rounded-2xl transition-all duration-300 ${
-        isExpanded ? 'bg-marrom_claro text-black p-6' : 'bg-bege text-black p-4'
+      className={`relative flex flex-col items-start justify-center rounded-2xl transition-all duration-300 p-5 w-full ${
+        selecionado ? 'bg-marrom_claro text-black' : 'bg-bege text-black'
       }`}
     >
       {/* Botão principal */}
@@ -61,16 +60,18 @@ const EditImovel = ({
           height={235}
           className="rounded-lg w-[120px] h-[120px]"
         />
-        <div className="flex py-3 w-full h-auto flex-col items-start justify-between">
+        <div className="flex flex-col w-full min-w-0 items-start justify-start gap-1">
           <p className="bg-marrom text-[12px] inline-flex rounded-full w-auto h-auto px-3 py-1 text-white">
             {imovel.tipo}
           </p>
-          <h3 className="font-bold">{imovel.nome}</h3>
+          <h3 className="font-bold line-clamp-2 break-words w-full text-left">
+            {imovel.nome}
+          </h3>
           <div className="flex flex-col items-start">
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full min-w-0">
               <MapPin size={20} className="flex-shrink-0 p-1" />
-              <div className="flex flex-col flex-shrink-0 items-start">
-                <p className="text-[12px]">
+              <div className="flex flex-col items-start min-w-0 w-full">
+                <p className="text-[12px] truncate max-w-[160px] text-left">
                   {imovel.endereco.logradouro}, {imovel.endereco.numero}
                 </p>
                 <p className="text-[12px]">
@@ -83,7 +84,7 @@ const EditImovel = ({
       </button>
 
       {/* Botões adicionais, aparecem somente quando expandido */}
-      {isExpanded && (
+      {selecionado && (
         <div className="flex w-full flex-shrink-0 gap-3">
           <button
             className="flex w-full py-3 justify-center bg-white rounded-full shadow-md"
