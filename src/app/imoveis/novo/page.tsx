@@ -94,6 +94,18 @@ export default function RegistrationForm() {
       form.elements.namedItem('tipoOferta') as HTMLSelectElement
     ).value
 
+    const VALOR_MAXIMO_IMOVEL = 100_000_000
+
+    if (isNaN(valor) || valor <= 0) {
+      alert('O valor do imóvel deve ser maior que zero.')
+      return
+    }
+
+    if (valor > VALOR_MAXIMO_IMOVEL) {
+      alert('O valor máximo permitido é R$ 100.000.000')
+      return
+    }
+
     const agente = (form.elements.namedItem('agentes') as HTMLSelectElement)
       .value
     const agenteId = agenteOptions[agente] || null
