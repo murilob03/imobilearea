@@ -2,104 +2,146 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "sqlite"
-    url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-    id        String   @id @default(uuid())
-    name      String
-    email     String
-    cellphone String   @unique
-    password  String
-    role      String // CLIENTE, IMOBILIARIA, AGENTE or ADMIN
-    createdAt DateTime @default(now())
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  cellphone String   @unique
+  password  String
+  role      String
+  createdAt DateTime @default(now())
 
-    Cliente     Cliente?
-    Agente      Agente?
-    Imobiliaria Imobiliaria?
+  Cliente     Cliente?
+  Agente      Agente?
+  Imobiliaria Imobiliaria?
 
-    favoritos   Favorito[] 
+  favoritos Favorito[]
+
+  // Reverso das conversas
+  clientConversations Conversation[] @relation("ClientConversations")
+  agentConversations  Conversation[] @relation("AgentConversations")
+
+  // Reverso das mensagens
+  messages Message[]
 }
 
 model Cliente {
-    id  String @id
-    cpf String
+  id  String @id
+  cpf String
 
-    user User @relation(fields: [id], references: [id], onDelete: Cascade)
+  user User @relation(fields: [id], references: [id], onDelete: Cascade)
 }
 
 model Agente {
-    id            String  @id
-    cpf           String
-    creci         String
-    imobiliariaId String? // Optional, as not all agents are tied to an Imobiliaria
+  id            String  @id
+  cpf           String
+  creci         String
+  imobiliariaId String? // Optional, as not all agents are tied to an Imobiliaria
 
-    user        User         @relation(fields: [id], references: [id], onDelete: Cascade)
-    imobiliaria Imobiliaria? @relation(fields: [imobiliariaId], references: [id])
-    /*
-     * One-to-many relationship with Imovel
-     * agent can only associate with a Imovel if both belong to the same Imobiliaria
-     * this constrait needs to be enforced in the application layer
-     */
-    Imovel      Imovel[]
+  user        User         @relation(fields: [id], references: [id], onDelete: Cascade)
+  imobiliaria Imobiliaria? @relation(fields: [imobiliariaId], references: [id])
+  /**
+   * One-to-many relationship with Imovel
+   * agent can only associate with a Imovel if both belong to the same Imobiliaria
+   * this constrait needs to be enforced in the application layer
+   */
+  Imovel      Imovel[]
 }
 
 model Imobiliaria {
-    id   String @id
-    cnpj String
+  id   String @id
+  cnpj String
 
-    user    User     @relation(fields: [id], references: [id], onDelete: Cascade)
-    agentes Agente[] // One-to-many relationship with Agente
-    imoveis Imovel[] // One-to-many relationship with Imovel
+  user    User     @relation(fields: [id], references: [id], onDelete: Cascade)
+  agentes Agente[] // One-to-many relationship with Agente
+  imoveis Imovel[] // One-to-many relationship with Imovel
 }
 
 model Imovel {
-    id            String  @id @default(uuid())
-    nome          String  @unique
-    areaPrivada   Float
-    numQuartos    Int
-    numVagas      Int
-    tipo          String
-    valor         Float
-    enderecoId    String
-    imobiliariaId String
-    agenteId      String?
-    escondido     Boolean @default(false)
-    tipoOferta    String  @default("VENDA") // "COMPRA" ou "VENDA"
+  id            String  @id @default(uuid())
+  nome          String  @unique
+  areaPrivada   Float
+  numQuartos    Int
+  numVagas      Int
+  tipo          String
+  valor         Float
+  enderecoId    String
+  imobiliariaId String
+  agenteId      String?
+  escondido     Boolean @default(false)
+  tipoOferta    String  @default("VENDA") // "COMPRA" ou "VENDA"
 
-    imobiliaria Imobiliaria @relation(fields: [imobiliariaId], references: [id])
-    endereco    Endereco    @relation(fields: [enderecoId], references: [id])
-    agente      Agente?     @relation(fields: [agenteId], references: [id])
+  imobiliaria Imobiliaria @relation(fields: [imobiliariaId], references: [id])
+  endereco    Endereco    @relation(fields: [enderecoId], references: [id])
+  agente      Agente?     @relation(fields: [agenteId], references: [id])
 
-    favoritos    Favorito[]
+  favoritos     Favorito[]
+  conversations Conversation[]
 }
 
 model Endereco {
-    id          String  @id @default(uuid())
-    cep         Int
-    logradouro  String
-    numero      Int
-    bairro      String
-    complemento String?
-    cidade      String
-    estado      String
+  id          String  @id @default(uuid())
+  cep         Int
+  logradouro  String
+  numero      Int
+  bairro      String
+  complemento String?
+  cidade      String
+  estado      String
 
-    Imovel Imovel[] // One-to-many relationship with Imovel
+  Imovel Imovel[] // One-to-many relationship with Imovel
 }
 
 model Favorito {
-  id       String  @id @default(uuid())
-  userId   String
-  imovelId String
+  id        String   @id @default(uuid())
+  userId    String
+  imovelId  String
   createdAt DateTime @default(now())
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   imovel Imovel @relation(fields: [imovelId], references: [id], onDelete: Cascade)
 
   @@unique([userId, imovelId]) // Garante que um usuário não pode favoritar o mesmo imóvel mais de uma vez
+}
+
+model Conversation {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  clientId   String
+  agentId    String
+  propertyId String?
+
+  client   User    @relation("ClientConversations", fields: [clientId], references: [id])
+  agent    User    @relation("AgentConversations", fields: [agentId], references: [id])
+  property Imovel? @relation(fields: [propertyId], references: [id])
+
+  messages Message[]
+
+  @@index([clientId])
+  @@index([agentId])
+  @@index([propertyId])
+}
+
+model Message {
+  id             Int      @id @default(autoincrement())
+  conversationId Int
+  senderId       String
+  text           String
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+  sender       User         @relation(fields: [senderId], references: [id])
+
+  @@index([conversationId])
+  @@index([senderId])
 }
