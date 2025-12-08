@@ -147,35 +147,36 @@ export default function Busca() {
           Busca
         </h1>
 
-        {/* Input field with icons */}
-        <div>
-          <div className="flex items-center relative">
-            <InputField
-              label=""
-              type="string"
-              name="creci"
-              placeholder=""
-              required
-              className="pl-14 placeholder:text-black text-base"
-              value={inputValue} // Controlled input value
-              onChange={(e) => setInputValue(e.target.value)} // Update state on input change
-            />
-            <Search size={24} className="absolute left-6" />
-            <CircleX
-              size={24}
-              className="absolute right-6 cursor-pointer"
-              onClick={clearInput} // Clear input field
-            />
-          </div>
-
-          {/* Filter button */}
-          <div className="flex justify-end">
+        {/* Search bar with filter button */}
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center relative flex-1">
+              <InputField
+                label=""
+                type="string"
+                name="creci"
+                placeholder="Buscar por nome, tipo, cidade..."
+                required
+                className="pl-14 pr-12 placeholder:text-gray-500 text-base"
+                value={inputValue} // Controlled input value
+                onChange={(e) => setInputValue(e.target.value)} // Update state on input change
+              />
+              <Search size={20} className="absolute left-4 text-gray-600" />
+              {inputValue && (
+                <CircleX
+                  size={20}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700 z-20"
+                  onClick={clearInput} // Clear input field
+                />
+              )}  
+            </div>
+            
+            {/* Filter button integrated with search */}
             <button
-              className="flex items-center gap-2 text-base font-semibold px-4 py-2"
+              className="flex items-center justify-center bg-marrom text-white font-medium px-5 h-[60px] rounded-xl hover:bg-opacity-90 transition-colors"
               onClick={() => router.push('/busca/filtro')}
             >
-              <SlidersHorizontal size={18} />
-              filtrar
+              <SlidersHorizontal size={24} />
             </button>
           </div>
         </div>

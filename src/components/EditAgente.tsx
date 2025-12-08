@@ -1,30 +1,54 @@
 import React, { useState } from 'react'
 import Image from 'next/image'
 import { AgenteLer } from '@/types/usuarios'
+import ConfirmModal from './ConfirmModal'
 
 interface EditAgenteProps {
   agente: AgenteLer
   onDelete?: () => void
+  isExpanded?: boolean
+  onToggle?: () => void
 }
 
-const EditAgente = ({ agente, onDelete }: EditAgenteProps) => {
-  const [isExpanded, setIsExpanded] = useState(false)
+const EditAgente = ({ 
+  agente, 
+  onDelete, 
+  isExpanded = false, 
+  onToggle 
+}: EditAgenteProps) => {
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   const handleToggle = () => {
-    setIsExpanded(!isExpanded)
+    if (onToggle) {
+      onToggle()
+    }
   }
 
-  const handleDelete = () => {
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true)
+  }
+
+  const confirmDelete = async () => {
     try {
-      fetch(`/api/agente/${agente.id}`, {
+      const response = await fetch(`/api/agente/${agente.id}`, {
         method: 'DELETE',
       })
-      if (onDelete) {
-        onDelete()
+      
+      if (response.ok) {
+        setShowDeleteModal(false)
+        if (onDelete) {
+          onDelete()
+        }
+      } else {
+        console.error('Erro ao excluir agente')
       }
     } catch (error) {
-      console.error(error)
+      console.error('Erro ao excluir agente:', error)
     }
+  }
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false)
   }
 
   return (
@@ -59,12 +83,27 @@ const EditAgente = ({ agente, onDelete }: EditAgenteProps) => {
         <div className="flex w-full flex-shrink-0 gap-3">
           <button
             className="flex w-full py-3 justify-center bg-white rounded-full shadow-md"
-            onClick={handleDelete}
+            onClick={(e) => {
+              e.stopPropagation()
+              handleDeleteClick()
+            }}
           >
             Excluir
           </button>
         </div>
       )}
+
+      {/* Modal de confirmação para exclusão */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        title="Excluir Agente"
+        message={`Tem certeza que deseja excluir o agente ${agente.name} (CRECI: ${agente.creci})? Esta ação não pode ser desfeita.`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        confirmButtonColor="red"
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
     </div>
   )
 }
