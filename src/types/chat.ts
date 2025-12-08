@@ -1,16 +1,10 @@
 // Types para o sistema de chat
 
 // TODO: Backend - Adaptar conforme o schema do Prisma
-export interface Chat {
-  id: number
-  name: string
-  lastMessage: string
-  time: string
-  avatar: string // TODO: Substituir por photoUrl quando integrar com banco
-  // Adicionar quando necessário:
-  // userId: string
-  // unreadCount?: number
-  // isOnline?: boolean
+export interface ConversaCriar {
+  clientId: string
+  agentId: string
+  propertyId?: string
 }
 
 export interface Message {
