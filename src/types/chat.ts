@@ -30,12 +30,10 @@ export interface MessageSendDTO {
   text: string
 }
 
-export interface User {
-  id: string
-  name: string
-  avatar: string // TODO: Substituir por photoUrl
-  // Adicionar quando necessário:
-  // email?: string
-  // isOnline?: boolean
-  // lastSeen?: Date
+export interface Chat {
+  id: number // ID da conversa
+  name: string // Nome do outro usuário
+  lastMessage: string // Prévia da última mensagem
+  time: string // Horário formatado para exibição
+  avatar: string // Emoji/avatar gerado pela UI
 }

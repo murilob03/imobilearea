@@ -140,7 +140,7 @@ export default function ChatPage() {
             onClick={() => router.back()}
           />
 
-          <ChatAvatar avatar={otherUser.avatar ?? '👤'} size="small" />
+          <ChatAvatar avatar={otherUser.avatar ?? '👨🏻‍💼'} size="small" />
 
           <span className="font-semibold text-black">{otherUser.name}</span>
         </div>

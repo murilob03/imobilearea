@@ -22,6 +22,10 @@ export async function GET() {
       client: true,
       agent: true,
       property: true,
+      messages: {
+        take: 1,
+        orderBy: { createdAt: 'desc' },
+      },
     },
     orderBy: { updatedAt: 'desc' },
   })

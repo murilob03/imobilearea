@@ -5,62 +5,73 @@ import InputField from '@/components/InputField'
 import ChatListItem from '@/components/ChatListItem'
 import { ArrowLeft, Search } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Chat } from '@/types/chat'
+import { useSession } from 'next-auth/react'
 
 export default function ChatList() {
   const router = useRouter()
+  const { data: session } = useSession()
+
   const [search, setSearch] = useState('')
+  const [chats, setChats] = useState<Chat[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // TODO: Backend - Substituir por fetch de conversas reais
-  // GET /api/chat - Buscar todas as conversas do usuário logado
-  // Retorno esperado: { userId, userName, userAvatar, lastMessage, timestamp }
-  const chats: Chat[] = [
-    { 
-      id: 1, 
-      name: 'Murilo Boccardo', 
-      lastMessage: 'Ótimo! Vou verificar a documentação', 
-      time: '8:40',
-      avatar: '👨🏻'
-    },
-    { 
-      id: 2, 
-      name: 'Rodrigo Gidioni', 
-      lastMessage: 'Podemos marcar para amanhã?', 
-      time: '9:10',
-      avatar: '👨🏻‍💼'
-    },
-    { 
-      id: 3, 
-      name: 'Julia Shimano', 
-      lastMessage: 'Obrigada pela informação!', 
-      time: '10:33',
-      avatar: '👩🏻'
-    },
-    { 
-      id: 4, 
-      name: 'Milena Saito', 
-      lastMessage: 'Quanto está o valor do aluguel?', 
-      time: '11:15',
-      avatar: '👩🏻‍💼'
-    },
-    { 
-      id: 5, 
-      name: 'Jean Lucas', 
-      lastMessage: 'Sim, combinado', 
-      time: '12:00',
-      avatar: '👨🏽'
-    },
-    { 
-      id: 6, 
-      name: 'Juliana Kawakami', 
-      lastMessage: 'Perfeito, até lá!', 
-      time: '12:30',
-      avatar: '👩🏻‍🦰'
+  // Lista de avatares (5 que ciclam)
+  const avatars = ['👨🏻', '👩🏻', '🧑🏽', '👨🏼‍💼', '👩🏻‍💼']
+
+  // Buscar conversas do usuário
+  async function fetchChats() {
+    if (!session?.user?.id) return
+
+    try {
+      const res = await fetch('/api/chat/conversations', {
+        method: 'GET',
+        credentials: 'include',
+      })
+
+      if (!res.ok) {
+        console.error('Erro ao buscar conversas')
+        return
+      }
+
+      const data = await res.json()
+
+      // Formatar retorno do backend → formato esperado pelo ChatListItem
+      const formatted: Chat[] = data.map((c: any, index: number) => {
+        // Decide quem é o "outro usuário"
+        const isClient = c.clientId === session.user.id
+        const other = isClient ? c.agent : c.client
+
+        return {
+          id: c.id,
+          name: other?.name || 'Usuário',
+          lastMessage: c.messages?.[0]?.text || 'Sem mensagens ainda',
+          time: new Date(c.updatedAt).toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+          avatar: avatars[index % avatars.length],
+        }
+      })
+
+      setChats(formatted)
+    } catch (err) {
+      console.error('Erro inesperado: ', err)
+    } finally {
+      setLoading(false)
     }
-  ]
+  }
 
-  const filtered = chats.filter(c =>
+  // Buscar ao carregar + polling a cada 5s
+  useEffect(() => {
+    fetchChats()
+    const interval = setInterval(fetchChats, 5000)
+    return () => clearInterval(interval)
+  }, [session])
+
+  // Filtragem local
+  const filtered = chats.filter((c) =>
     c.name.toLowerCase().includes(search.toLowerCase())
   )
 
@@ -68,10 +79,10 @@ export default function ChatList() {
     <div className="flex flex-col h-screen bg-bege">
       {/* Header */}
       <div className="flex items-center justify-center px-4 py-4 pt-14 relative">
-        <ArrowLeft 
-          size={24} 
-          className="cursor-pointer text-black absolute left-4" 
-          onClick={() => router.back()} 
+        <ArrowLeft
+          size={24}
+          className="cursor-pointer text-black absolute left-4"
+          onClick={() => router.back()}
         />
         <h1 className="text-xl font-semibold text-black">Chat</h1>
       </div>
@@ -79,8 +90,8 @@ export default function ChatList() {
       {/* Search */}
       <div className="px-4 py-2">
         <div className="relative">
-          <Search 
-            size={20} 
+          <Search
+            size={20}
             className="absolute left-7 top-1/2 transform -translate-y-1/2 text-gray-600 z-10"
           />
           <InputField
@@ -94,14 +105,18 @@ export default function ChatList() {
         </div>
       </div>
 
-      {/* Lista de Chats */}
+      {/* Lista */}
       <div className="flex-1 overflow-auto pb-28">
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-gray-500">Carregando conversas...</p>
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <p className="text-gray-500">Nenhuma conversa encontrada</p>
           </div>
         ) : (
-          filtered.map(chat => (
+          filtered.map((chat) => (
             <ChatListItem
               key={chat.id}
               id={chat.id}

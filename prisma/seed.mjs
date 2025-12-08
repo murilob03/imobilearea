@@ -10,8 +10,8 @@ async function main() {
     data: {
       user: {
         create: {
-          name: 'John Doe',
-          email: 'john.doe@example.com',
+          name: 'Muras Boccardo',
+          email: 'muras.boccardo@example.com',
           cellphone: '441234567890',
           password:
             '$2b$10$r07EqD6J.5ZNuDiHT1dBBOj3BlR8aenPIcx1590pefDL/RO1H7ogC',
@@ -26,8 +26,8 @@ async function main() {
     data: {
       user: {
         create: {
-          name: 'Jane Smith',
-          email: 'jane.smith@example.com',
+          name: 'Juliana Naoma',
+          email: 'juliana.naoma@example.com',
           cellphone: '440987654321',
           password:
             '$2b$10$r07EqD6J.5ZNuDiHT1dBBOj3BlR8aenPIcx1590pefDL/RO1H7ogC',
@@ -43,8 +43,8 @@ async function main() {
     data: {
       user: {
         create: {
-          name: 'Imobiliaria XYZ',
-          email: 'xyz@realty.com',
+          name: 'MuJoJuGuYo Imóveis',
+          email: 'mujojuguyo@realty.com',
           cellphone: '445555555555',
           password:
             '$2b$10$r07EqD6J.5ZNuDiHT1dBBOj3BlR8aenPIcx1590pefDL/RO1H7ogC',
@@ -60,8 +60,8 @@ async function main() {
     data: {
       user: {
         create: {
-          name: 'Agent 1',
-          email: 'agent1@realty.com',
+          name: 'Gustavo Henrique',
+          email: 'gusta.henrique@realty.com',
           cellphone: '444444444444',
           password:
             '$2b$10$r07EqD6J.5ZNuDiHT1dBBOj3BlR8aenPIcx1590pefDL/RO1H7ogC',
@@ -82,8 +82,8 @@ async function main() {
     data: {
       user: {
         create: {
-          name: 'Agent 2',
-          email: 'agent2@realty.com',
+          name: 'Yoshiyuko Fujo',
+          email: 'yoshiyuko.fujo@realty.com',
           cellphone: '443333333333',
           password:
             '$2b$10$r07EqD6J.5ZNuDiHT1dBBOj3BlR8aenPIcx1590pefDL/RO1H7ogC',
@@ -92,6 +92,23 @@ async function main() {
       },
       cpf: '55566677788',
       creci: 'CRECI002',
+    },
+  })
+
+  const agente3 = await prisma.agente.create({
+    data: {
+      user: {
+        create: {
+          name: 'Vassalo Joao',
+          email: 'vassalo.joao@realty.com',
+          cellphone: '443333333334',
+          password:
+            '$2b$10$r07EqD6J.5ZNuDiHT1dBBOj3BlR8aenPIcx1590pefDL/RO1H7ogC',
+          role: 'AGENTE',
+        },
+      },
+      cpf: '55566677768',
+      creci: 'CRECI003',
     },
   })
 
@@ -160,6 +177,7 @@ async function main() {
     imobiliaria,
     agente1,
     agente2,
+    agente3,
     imovel1,
     imovel2,
   })
