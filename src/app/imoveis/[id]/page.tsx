@@ -42,7 +42,7 @@ export default function ImovelPage() {
 
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="w-full h-full bg-bege overflow-y-auto relative">
+      <div className="w-full h-full bg-bege overflow-y-auto relative pb-36">
         <div className="relative w-full h-64">
           {/* Imagem */}
           <Image
